@@ -31,6 +31,22 @@ def extract_cqcc(x, fs):
     CQcc, LogP_absCQT, TimeVec, FreqVec, Ures_LogP_absCQT, Ures_FreqVec, absCQT = cqcc(x, fs, B, fmax, fmin, d, cf, ZsdD)
     return CQcc, fmax, fmin
 
+def calculate_nfft(samplerate, winlen):
+    """Calculates the FFT size as a power of two greater than or equal to
+    the number of samples in a single window length.
+    
+    Having an FFT less than the window length loses precision by dropping
+    many of the samples; a longer FFT than the window allows zero-padding
+    of the FFT buffer which is neutral in terms of frequency domain conversion.
+    :param samplerate: The sample rate of the signal we are working with, in Hz.
+    :param winlen: The length of the analysis window in seconds.
+    """
+    window_length_samples = winlen * samplerate
+    nfft = 1
+    while nfft < window_length_samples:
+        nfft *= 2
+    return nfft
+
 # read in labels
 filename2label = {}
 for line in open(args.label_path):
@@ -46,19 +62,23 @@ for filepath in os.listdir(args.data_path):
     label = filename2label[filename]
     print("filename:", os.path.join(args.data_path, filepath))
     sig, rate = sf.read(os.path.join(args.data_path, filepath))
+    print(sig.shape)
     print("rate:", rate)
     feat_cqcc, fmax, fmin = extract_cqcc(sig, rate)
     print("feat cqcc:", feat_cqcc.shape)
     numframes = feat_cqcc.shape[0]
     winstep = 0.005
     winlen =  (len(sig) - winstep*rate*(numframes-1))/rate
-    feat_mfcc = mfcc(sig,rate,winlen=winlen,winstep=winstep, lowfreq=fmin,highfreq=fmax)      # number of frames * number of cep
+    nfft = calculate_nfft(rate, winlen)
+    feat_mfcc = mfcc(sig,rate,winlen=winlen,winstep=winstep, lowfreq=fmin,highfreq=fmax, nfft=nfft)      # number of frames * number of cep
     # if args.feature_type == "cqcc":
     #     feat = extract_cqcc(sig, rate)
     # elif args.feature_type == "mfcc":
     #     feat = mfcc(sig, rate)
     print("feat mfcc:", feat_mfcc.shape)
     feats.append((feat_cqcc, feat_mfcc, label))
+    if len(feats) % 1000 == 0:
+        print(len(feats))
 
 print("number of instances:", len(feats))
 
