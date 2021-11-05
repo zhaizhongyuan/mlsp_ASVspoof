@@ -15,9 +15,9 @@ from scipy import stats
 
 def traingmm(train_path, dest, feature_type):
     #print(len(lenth), np.max(lenth), np.mean(lenth), stats.mode(lenth)[0][0])
-    gmm_bon = GMM(n_components = 144, covariance_type='diag',n_init = 50) # min shape[0] = 135 # max = 1112
+    gmm_bon = GMM(n_components = 144, covariance_type='diag',n_init = 5,verbose=2, max_iter=300) # min shape[0] = 135 # max = 1112
     # 2580 1112 337.8709302325581 289
-    gmm_sp  = GMM(n_components = 144, covariance_type='diag',n_init = 50)  # min shape[0] = 64  # max = 1318
+    gmm_sp  = GMM(n_components = 144, covariance_type='diag',n_init = 5,verbose=2, max_iter=300)  # min shape[0] = 64  # max = 1318
     # 22800 1318 341.9821929824561 297
 
 
@@ -31,7 +31,10 @@ def traingmm(train_path, dest, feature_type):
     
     with open(train_path, 'rb') as infile:
         data = pickle.load(infile)
-        for feat_cqcc, feat_mfcc, label in data:
+        for t in data:
+            if t is None:
+                continue
+            feat_cqcc, feat_mfcc, label = t
             # feature selection
             if feature_type == "cqcc":
                 feats = feat_cqcc
@@ -67,8 +70,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_path", required=True, type=str,  default='./data/train.pkl', help='path to pickled file. For example, data/train.pkl')
-    parser.add_argument("--model_path", required=True, type=str, default='./data/', help='path to pickled file. For example, data/train.pkl')
-    parser.add_argument("--feature_type", required=True, type=str, default='cqcc', help='select the feature type. cqcc or mfcc')
+    parser.add_argument("--model_path", required=False, type=str, default='./model/', help='path to pickled file. For example, data/train.pkl')
+    parser.add_argument("--feature_type", required=False, type=str, default='cqcc', help='select the feature type. cqcc or mfcc')
     args = parser.parse_args()
 
     train_path = args.data_path

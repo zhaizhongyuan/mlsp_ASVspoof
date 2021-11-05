@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pickle
 import argparse
+import multiprocessing
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", required=True, type=str, help='path to ASVSpoof data directory. For example, LA/ASVspoof2019_LA_train/flac/')
@@ -54,18 +55,29 @@ for line in open(args.label_path):
     filename, label = line[1], line[-1]
     filename2label[filename] = label
 
-feats = []
-for filepath in os.listdir(args.data_path):
+# feats = []
+
+from ctypes import c_int
+counter = multiprocessing.Value(c_int)
+counter_lock = multiprocessing.Lock()
+
+def increment():
+    with counter_lock:
+        counter.value += 1
+        if counter.value % 200 == 0:
+            print(counter.value)
+
+def process_audio(filepath):
     filename = filepath.split('.')[0]
     if filename not in filename2label: # we skip speaker enrollment stage
-        continue
+        return
     label = filename2label[filename]
-    print("filename:", os.path.join(args.data_path, filepath))
+    # print("filename:", os.path.join(args.data_path, filepath))
     sig, rate = sf.read(os.path.join(args.data_path, filepath))
-    print(sig.shape)
-    print("rate:", rate)
+    # print(sig.shape)
+    # print("rate:", rate)
     feat_cqcc, fmax, fmin = extract_cqcc(sig, rate)
-    print("feat cqcc:", feat_cqcc.shape)
+    # print("feat cqcc:", feat_cqcc.shape)
     numframes = feat_cqcc.shape[0]
     winstep = 0.005
     winlen =  (len(sig) - winstep*rate*(numframes-1))/rate
@@ -75,14 +87,57 @@ for filepath in os.listdir(args.data_path):
     #     feat = extract_cqcc(sig, rate)
     # elif args.feature_type == "mfcc":
     #     feat = mfcc(sig, rate)
-    print("feat mfcc:", feat_mfcc.shape)
-    feats.append((feat_cqcc, feat_mfcc, label))
-    if len(feats) % 1000 == 0:
-        print(len(feats))
+    # print("feat mfcc:", feat_mfcc.shape)
+    # feats.append((feat_cqcc, label))
+    # if len(feats) % 1000 == 0:
+    #     print(len(feats))
+    increment()
 
-print("number of instances:", len(feats))
+    return (feat_cqcc, feat_mfcc, label)
 
-with open(args.output_path, 'wb') as outfile:
-    pickle.dump(feats, outfile)
+chunksize = 2600
+total_size = len(os.listdir(args.data_path))
+
+a_pool = multiprocessing.Pool(8)
+
+for n in range(0, total_size, 2600):
+
+    feats = []
+
+    # a_pool = multiprocessing.Pool(8)
+
+    feats = a_pool.map(process_audio, os.listdir(args.data_path)[n:n+chunksize])
+
+    # for filepath in os.listdir(args.data_path):
+    #     filename = filepath.split('.')[0]
+    #     if filename not in filename2label: # we skip speaker enrollment stage
+    #         continue
+    #     label = filename2label[filename]
+    #     # print("filename:", os.path.join(args.data_path, filepath))
+    #     sig, rate = sf.read(os.path.join(args.data_path, filepath))
+    #     # print(sig.shape)
+    #     # print("rate:", rate)
+    #     feat_cqcc, fmax, fmin = extract_cqcc(sig, rate)
+    #     # print("feat cqcc:", feat_cqcc.shape)
+    #     # numframes = feat_cqcc.shape[0]
+    #     # winstep = 0.005
+    #     # winlen =  (len(sig) - winstep*rate*(numframes-1))/rate
+    #     # nfft = calculate_nfft(rate, winlen)
+    #     # feat_mfcc = mfcc(sig,rate,winlen=winlen,winstep=winstep, lowfreq=fmin,highfreq=fmax, nfft=nfft)      # number of frames * number of cep
+    #     # if args.feature_type == "cqcc":
+    #     #     feat = extract_cqcc(sig, rate)
+    #     # elif args.feature_type == "mfcc":
+    #     #     feat = mfcc(sig, rate)
+    #     # print("feat mfcc:", feat_mfcc.shape)
+    #     feats.append((feat_cqcc, label))
+    #     if len(feats) % 1000 == 0:
+    #         print(len(feats))
+
+    print("number of instances:", len(feats))
+
+    output_path = args.output_path + "{}.pkl".format(n)
+    with open(output_path, 'wb') as outfile:
+        pickle.dump(feats, outfile)
+    print("dumpped", output_path)
 
 
