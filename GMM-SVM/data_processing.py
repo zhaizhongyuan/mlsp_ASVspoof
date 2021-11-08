@@ -135,7 +135,7 @@ for n in range(0, total_size, 2600):
 
     print("number of instances:", len(feats))
 
-    output_path = args.output_path + "{}.pkl".format(n)
+    output_path = args.output_path + "-{}.pkl".format(n)
     with open(output_path, 'wb') as outfile:
         pickle.dump(feats, outfile)
     print("dumpped", output_path)

@@ -12,6 +12,8 @@ from sklearn import preprocessing
 from pdb import set_trace
 from scipy import stats
 
+import argparse
+
 def testgmm(test_path, dest, feature_type):
     # training data accuracy
     gmm_bon = pickle.load(open(dest + 'bon' + '.gmm','rb'))
@@ -21,9 +23,15 @@ def testgmm(test_path, dest, feature_type):
     spdata = []
     # debug
     #j = 0
+    # print(test_path)
     with open(test_path, 'rb') as infile:
+        # print(infile)
         data = pickle.load(infile)
-        for feat_cqcc, feat_mfcc, label in data:
+        # print(data)
+        for t in data:
+            if t is None:
+                continue
+            feat_cqcc, feat_mfcc, label = t
             # feature selection
             if feature_type == "cqcc":
                 feats = feat_cqcc
@@ -31,7 +39,7 @@ def testgmm(test_path, dest, feature_type):
                 feats = feat_mfcc
             # label selection
             if (label == 'bonafide'):
-                j += 1
+                # j += 1
                 bondata.append(feats)
             elif(label == 'spoof'):
                 spdata.append(feats)
