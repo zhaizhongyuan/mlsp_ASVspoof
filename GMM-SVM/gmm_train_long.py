@@ -35,6 +35,7 @@ def traingmm(train_path, dest, feature_type):
 
 
     # for num in range(10):
+        # filename = train_path + "-{}.pkl".format(num * 2600)
         filename = train_path + "-{}.pkl".format(num * 2600)
         with open(filename, 'rb') as infile:
             data = pickle.load(infile)

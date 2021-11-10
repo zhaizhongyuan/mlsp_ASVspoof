@@ -26,7 +26,8 @@ def testgmm(test_path, dest_bon, dest_sp, feature_type):
     # print(test_path)
 
     for num in range(10):
-        filename = test_path + "-{}.pkl".format(num * 2600)
+        # filename = test_path + "-{}.pkl".format(num * 2600)
+        filename = test_path + "-{}.pkl".format(num)
         with open(filename, 'rb') as infile:
             # print(infile)
             data = pickle.load(infile)
