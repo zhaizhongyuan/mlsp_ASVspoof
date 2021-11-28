@@ -15,9 +15,9 @@ from sklearn.mixture import GaussianMixture as GMM
 
 def traingmm(train_path, dest, feature_type):
     #print(len(lenth), np.max(lenth), np.mean(lenth), stats.mode(lenth)[0][0])
-    gmm_bon = GMM(n_components = 144, covariance_type='diag',n_init = 1,verbose=2, max_iter=100, warm_start=True) # min shape[0] = 135 # max = 1112
+    gmm_bon = GMM(n_components = 512, covariance_type='diag',n_init = 1,verbose=2, max_iter=600, warm_start=True) # min shape[0] = 135 # max = 1112
     # 2580 1112 337.8709302325581 289
-    gmm_sp  = GMM(n_components = 144, covariance_type='diag',n_init = 1,verbose=2, max_iter=100, warm_start=True)  # min shape[0] = 64  # max = 1318
+    gmm_sp  = GMM(n_components = 512, covariance_type='diag',n_init = 1,verbose=2, max_iter=600, warm_start=True)  # min shape[0] = 64  # max = 1318
     # 22800 1318 341.9821929824561 297
 
 
@@ -36,7 +36,7 @@ def traingmm(train_path, dest, feature_type):
 
     # for num in range(10):
         # filename = train_path + "-{}.pkl".format(num * 2600)
-        filename = train_path + "-{}.pkl".format(num * 2600)
+        filename = train_path + "-{}.pkl".format(num)
         with open(filename, 'rb') as infile:
             data = pickle.load(infile)
             for t in data:
