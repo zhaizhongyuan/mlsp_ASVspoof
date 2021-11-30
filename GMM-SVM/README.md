@@ -1,66 +1,56 @@
 # ASVspoof
 
-## Timelines
-**[20/10 - 26/10]**
+## install
+tested working on python 3.7 environment
 
-[1] Shentong/Haofan: python reimplementation of CQCC
+```
+pip install numpy soundfile spafe sklearn
+```
 
-[2] Chi: X-vector feature extraction
-
-[3] Pinxu: GMM/SVM classifier build 
-
-
-## Reports
-proposal overleaf: https://www.overleaf.com/project/5f6954ebb68ba500013c78f1
-
-## Dataset (LA)
-Google drive: https://drive.google.com/file/d/1UGs1o2mDiBO9_iaN-0FupS8x0Tkb4xmt/view?usp=sharing
 
 ## Feature Extraction
-### CQCC (baseline)
+assume LA dataset is located at ../LA
+
 ```
-python3 data_processing.py --data_path ./LA/ASVspoof2019_LA_train/flac --output_path ./data/train_cqcc.pkl --label_path ./LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt --feature_type cqcc 
-```
-```
-python3 data_processing.py --data_path ./LA/ASVspoof2019_LA_dev/flac --output_path ./data/dev_cqcc.pkl --label_path ./LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt --feature_type cqcc
+python3 data_processing.py --data_path ../LA/ASVspoof2019_LA_train/flac --output_path ./data/train --label_path ../LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt
 ```
 ```
-python3 data_processing.py --data_path ./LA/ASVspoof2019_LA_eval/flac --output_path ./data/eval_cqcc.pkl --label_path ./LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt --feature_type cqcc
+python3 data_processing.py --data_path ../LA/ASVspoof2019_LA_dev/flac --output_path ./data/dev --label_path ../LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt
+```
+```
+python3 data_processing.py --data_path ../LA/ASVspoof2019_LA_eval/flac --output_path ./data/eval --label_path ../LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt
 ```
 
-The saved pickle file has the format: [(cqcc_vec[timestepx60], label[bonafide/spoof]) x N instances]
+The saved pickle file has the format: [(lfcc_vec[framecountx60], mfcc_vec[framecountx60], label[bonafide/spoof]) x N instances]
+
+## GMM TRAINING
 
 ### MFCC
 ```
-python3 data_processing.py --data_path ./LA/ASVspoof2019_LA_train/flac --output_path ./data/train_mfcc.pkl --label_path ./LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt --feature_type mfcc
-```
-```
-python3 data_processing.py --data_path ./LA/ASVspoof2019_LA_dev/flac --output_path ./data/dev_mfcc.pkl --label_path ./LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt --feature_type mfcc
-```
-```
-python3 data_processing.py --data_path ./LA/ASVspoof2019_LA_eval/flac --output_path ./data/eval_mfcc.pkl --label_path ./LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt --feature_type mfcc
+python3 gmm_train.py --data_path ./data/train --model_path ./model/mfcc_gmm_ --feature_type mfcc
 ```
 
-The saved pickle file has the format: [(mfcc_vec[timestepx13], label[bonafide/spoof]) x N instances]
-
-## Classifier
-
-### GMM
-
-
-### SVM
+### LFCC
 ```
-python3 SVM.py --data_path ./data/train.pkl --feature_type mfcc
-```
-```
-python3 SVM_test.py --data_path ./data/dev.pkl --feature_type mfcc
-```
-```
-python3 SVM_test.py --data_path ./data/eval.pkl --feature_type mfcc
+python3 gmm_train.py --data_path ./data/train --model_path ./model/lfcc_gmm_ --feature_type lfcc
 ```
 
+## GMM TESTING
 
-## Referecne
-[1] Ensemble Models for Spoofing Detection in Automatic Speaker Verification, 2019 Interspeech. 
+### MFCC
+```
+python gmm_test.py --data_path ./data/dev --model_path_bon ./model/mfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/mfcc_gmm_sp_epoch9.gmm --feature_type mfcc
+```
 
-[2] IIIT-H Spoofing Countermeasures for Automatic Speaker Verification, 2019 Interspeech. 
+```
+python gmm_test.py --data_path ./data/test --model_path_bon ./model/mfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/mfcc_gmm_sp_epoch9.gmm --feature_type mfcc
+```
+
+### LFCC
+```
+python gmm_test.py --data_path ./data/dev --model_path_bon ./model/lfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/lfcc_gmm_sp_epoch9.gmm --feature_type lfcc
+```
+
+```
+python gmm_test.py --data_path ./data/test --model_path_bon ./model/lfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/lfcc_gmm_sp_epoch9.gmm --feature_type lfcc
+```

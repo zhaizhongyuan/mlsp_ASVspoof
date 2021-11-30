@@ -1,43 +1,57 @@
-import os
+# import os
 import numpy as np
 import pickle
-import soundfile as sf
-import librosa
-import time
-import gc
+# import soundfile as sf
+# import librosa
+# import time
+# import gc
 
-from python_speech_features import mfcc
+# from python_speech_features import mfcc
 from sklearn.mixture import GaussianMixture as GMM
-from sklearn import preprocessing
-from pdb import set_trace
-from scipy import stats
+# from sklearn import preprocessing
+# from pdb import set_trace
+# from scipy import stats
 
-def testgmm(test_path, dest, feature_type):
+import argparse
+
+def testgmm(test_path, dest_bon, dest_sp, feature_type):
     # training data accuracy
-    gmm_bon = pickle.load(open(dest + 'bon' + '.gmm','rb'))
-    gmm_sp  = pickle.load(open(dest + 'sp' + '.gmm','rb'))
+    # gmm_bon = pickle.load(open(dest_bon + 'bon' + '.gmm','rb'))
+    # gmm_sp  = pickle.load(open(dest_sp + 'sp' + '.gmm','rb'))
+    gmm_bon = pickle.load(open(dest_bon,'rb'))
+    gmm_sp  = pickle.load(open(dest_sp,'rb'))
 
     bondata = []
     spdata = []
     # debug
     #j = 0
-    with open(test_path, 'rb') as infile:
-        data = pickle.load(infile)
-        for feat_cqcc, feat_mfcc, label in data:
-            # feature selection
-            if feature_type == "cqcc":
-                feats = feat_cqcc
-            elif feature_type == "mfcc":
-                feats = feat_mfcc
-            # label selection
-            if (label == 'bonafide'):
-                j += 1
-                bondata.append(feats)
-            elif(label == 'spoof'):
-                spdata.append(feats)
-            # debug
-            #if (j > 10):
-            #    break
+    # print(test_path)
+
+    for num in range(10):
+        # filename = test_path + "-{}.pkl".format(num * 2600)
+        filename = test_path + "-{}.pkl".format(num)
+        with open(filename, 'rb') as infile:
+            # print(infile)
+            data = pickle.load(infile)
+            # print(data)
+            for t in data:
+                if t is None:
+                    continue
+                feat_lfcc, feat_mfcc, label = t
+                # feature selection
+                if feature_type == "lfcc":
+                    feats = feat_lfcc
+                elif feature_type == "mfcc":
+                    feats = feat_mfcc
+                # label selection
+                if (label == 'bonafide'):
+                    # j += 1
+                    bondata.append(feats)
+                elif(label == 'spoof'):
+                    spdata.append(feats)
+                # debug
+                #if (j > 10):
+                #    break
     print(len(bondata), bondata[0].shape)
     print(len(spdata), spdata[0].shape)
 
@@ -48,7 +62,7 @@ def testgmm(test_path, dest, feature_type):
 
 
     for i in range(j_bon):
-        if (i % 50 == 0):
+        if (i % 500 == 0):
             print('Evaluating Bon sample at',i/j_bon * 100, '%')
         X = bondata[i]
         bscore = gmm_bon.score(X)
@@ -58,7 +72,7 @@ def testgmm(test_path, dest, feature_type):
         predb.append(bscore-sscore)
 
     for i in range(k_sp):
-        if (i % 50 == 0):
+        if (i % 500 == 0):
             print('Evaluating Sp sample at',i/k_sp * 100, '%')
         X = spdata[i]
         bscore = gmm_bon.score(X)
@@ -86,11 +100,13 @@ def testgmm(test_path, dest, feature_type):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", required=True, type=str,  default='./data/dev.pkl', help='path to pickled file. For example, data/train.pkl')
-    parser.add_argument("--model_path", required=True, type=str, default='./data/', help='path to pickled file. For example, data/train.pkl')
-    parser.add_argument("--feature_type", required=True, type=str, default='cqcc', help='select the feature type. cqcc or mfcc')
+    parser.add_argument("--data_path", required=True, type=str,  default='./data/dev', help='path to pickled file. For example, ./data/dev')
+    parser.add_argument("--model_path_bon", required=True, type=str, default='./model/mfcc_gmm_bon_epoch9.gmm', help='path to pickled file. For example, ./model/mfcc_gmm_bon_epoch9.gmm')
+    parser.add_argument("--model_path_sp", required=True, type=str, default='./data/mfcc_gmm_sp_epoch9.gmm', help='path to pickled file. For example, ./data/mfcc_gmm_sp_epoch9.gmm')
+    parser.add_argument("--feature_type", required=True, type=str, default='mfcc', help='select the feature type. lfcc or mfcc')
     args = parser.parse_args()
 
     dev_path = args.data_path
-    dest = args.model_path    
-    testgmm(dev_path, dest, args.feature_type)
+    dest_bon = args.model_path_bon
+    dest_sp = args.model_path_sp
+    testgmm(dev_path, dest_bon, dest_sp, args.feature_type)
