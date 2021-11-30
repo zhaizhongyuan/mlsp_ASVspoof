@@ -43,7 +43,7 @@ python gmm_test.py --data_path ./data/dev --model_path_bon ./model/mfcc_gmm_bon_
 ```
 
 ```
-python gmm_test.py --data_path ./data/test --model_path_bon ./model/mfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/mfcc_gmm_sp_epoch9.gmm --feature_type mfcc
+python gmm_test.py --data_path ./data/eval --model_path_bon ./model/mfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/mfcc_gmm_sp_epoch9.gmm --feature_type mfcc
 ```
 
 ### LFCC
@@ -52,5 +52,5 @@ python gmm_test.py --data_path ./data/dev --model_path_bon ./model/lfcc_gmm_bon_
 ```
 
 ```
-python gmm_test.py --data_path ./data/test --model_path_bon ./model/lfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/lfcc_gmm_sp_epoch9.gmm --feature_type lfcc
+python gmm_test.py --data_path ./data/eval --model_path_bon ./model/lfcc_gmm_bon_epoch9.gmm --model_path_sp ./model/lfcc_gmm_sp_epoch9.gmm --feature_type lfcc
 ```
