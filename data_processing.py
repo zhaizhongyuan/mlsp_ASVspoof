@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", required=False, type=str, help='path to ASVSpoof data directory. For example, LA/ASVspoof2019_LA_train/flac/', default="/mnt/LA/ASVspoof2019_LA_train/flac/")
 parser.add_argument("--label_path", required=False, type=str, help='path to label file. For example, LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt', default="/mnt/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt")
 parser.add_argument("--output_path", required=False, type=str, help='path to output pickle file. For example, ./data/train.pkl', default="/home/yuxuan/MLSP_ASVspoof/data/train")
+parser.add_argument("--ftype", required=True, type=str, help="type of featre. For example, lfcc, mfcc, silence, ...")
 # parser.add_argument("--feature_type", required=True, type=str, help='select the feature type.')
 args = parser.parse_args()
 
@@ -40,7 +41,7 @@ def calculate_delta(array):
         deltas[i] = (array[index[0][0]]-array[index[0][1]] + (2 * (array[index[1][0]]-array[index[1][1]]))) / 10
     return deltas
 
-def process_audio(filepath, feature_type="mfcc"):
+def process_audio(filepath, feature_type):
     # read in labels
     filename2label = {}
     for line in open(args.label_path):
@@ -67,7 +68,8 @@ def process_audio(filepath, feature_type="mfcc"):
         delta_feat_mfcc = calculate_delta(feat_mfcc)
         delta_delta_feat_mfcc = calculate_delta(delta_feat_mfcc)
         feat = np.hstack((feat_mfcc, delta_feat_mfcc, delta_delta_feat_mfcc))
-
+    else:
+        print("Bad feature type!")
     return feat, label
 
 
@@ -79,7 +81,7 @@ if __name__ == '__main__':
     for n in range(10):
         feats = []
         for filepath in tqdm(os.listdir(args.data_path)[n*chunksize : (n+1)*chunksize]):
-            feats.append(process_audio(filepath))
+            feats.append(process_audio(filepath, args.ftype))
             # Save output data
         output_path = args.output_path + "-{}.pkl".format(n)
         with open(output_path, 'wb') as outfile:
