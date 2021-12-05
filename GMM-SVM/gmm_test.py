@@ -1,57 +1,45 @@
-# import os
-import numpy as np
+import os
+import gc
+import time
 import pickle
-# import soundfile as sf
+import argparse
+import numpy as np
+from tqdm import tqdm
 # import librosa
-# import time
-# import gc
-
-# from python_speech_features import mfcc
+# import soundfile as sf
 from sklearn.mixture import GaussianMixture as GMM
-# from sklearn import preprocessing
-# from pdb import set_trace
-# from scipy import stats
 
 import argparse
 
 def testgmm(test_path, dest_bon, dest_sp, feature_type):
     # training data accuracy
-    # gmm_bon = pickle.load(open(dest_bon + 'bon' + '.gmm','rb'))
-    # gmm_sp  = pickle.load(open(dest_sp + 'sp' + '.gmm','rb'))
     gmm_bon = pickle.load(open(dest_bon,'rb'))
     gmm_sp  = pickle.load(open(dest_sp,'rb'))
 
     bondata = []
     spdata = []
-    # debug
-    #j = 0
-    # print(test_path)
 
     for num in range(10):
-        # filename = test_path + "-{}.pkl".format(num * 2600)
         filename = test_path + "-{}.pkl".format(num)
         with open(filename, 'rb') as infile:
-            # print(infile)
             data = pickle.load(infile)
-            # print(data)
             for t in data:
                 if t is None:
                     continue
                 feat_lfcc, feat_mfcc, label = t
+
                 # feature selection
                 if feature_type == "lfcc":
                     feats = feat_lfcc
                 elif feature_type == "mfcc":
                     feats = feat_mfcc
+
                 # label selection
                 if (label == 'bonafide'):
-                    # j += 1
                     bondata.append(feats)
                 elif(label == 'spoof'):
                     spdata.append(feats)
-                # debug
-                #if (j > 10):
-                #    break
+
     print(len(bondata), bondata[0].shape)
     print(len(spdata), spdata[0].shape)
 
@@ -61,24 +49,16 @@ def testgmm(test_path, dest_bon, dest_sp, feature_type):
     k_sp  = len(spdata)
 
 
-    for i in range(j_bon):
-        if (i % 500 == 0):
-            print('Evaluating Bon sample at',i/j_bon * 100, '%')
+    for i in tqdm(range(j_bon)):
         X = bondata[i]
         bscore = gmm_bon.score(X)
         sscore = gmm_sp.score(X)
-
-        #predb.append(np.exp(bscore)-np.exp(sscore))
         predb.append(bscore-sscore)
 
-    for i in range(k_sp):
-        if (i % 500 == 0):
-            print('Evaluating Sp sample at',i/k_sp * 100, '%')
+    for i in tqdm(range(k_sp)):
         X = spdata[i]
         bscore = gmm_bon.score(X)
         sscore = gmm_sp.score(X)
-
-        #preds.append(np.exp(bscore)-np.exp(sscore))
         preds.append(bscore-sscore)
 
     predb1 = np.asarray(predb)
@@ -88,7 +68,6 @@ def testgmm(test_path, dest_bon, dest_sp, feature_type):
     predb1[predb1 > 0] = 1
     predbresult1 = np.sum(predb1)
     print(predbresult1, 'Bon samples were CORRECTLY evaluated out of', j_bon,'samples. Bon_Accuracy = ', predbresult1/j_bon )# 0.7356
-
 
     preds1[preds1 > 0] = 0
     preds1[preds1 < 0] = 1
@@ -109,4 +88,5 @@ if __name__ == '__main__':
     dev_path = args.data_path
     dest_bon = args.model_path_bon
     dest_sp = args.model_path_sp
+
     testgmm(dev_path, dest_bon, dest_sp, args.feature_type)
