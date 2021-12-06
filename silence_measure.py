@@ -1,27 +1,28 @@
 import librosa as lr
 import numpy as np
+import soundfile as sf
+import os
 
 
-
-def vad(y_t,
-        sr,
-        power_th=1e-5,
-        power_tl=1e-6,
-        zcr_t=1e-2,
-        nframe_th=3,
-        nframe_tl=3,
-        frame_length=1024,
-        hop_length=256):  # 't' means threshold here
+def get_silence(
+    y_t,
+    sr,
+    power_th=1e-4,
+    power_tl=1e-5,
+    zcr_t=1e-1,
+    nframe_th=2,
+    nframe_tl=2,
+    frame_length=512,
+    hop_length=256,
+):  # 't' means threshold here
     # calculate zero-crossing rate and power of each frame
-    zcrs = lr.feature.zero_crossing_rate(y_t,
-                              frame_length=frame_length,
-                              hop_length=hop_length,
-                              center=False)
+    zcrs = lr.feature.zero_crossing_rate(
+        y_t, frame_length=frame_length, hop_length=hop_length, center=False
+    )
     powers = []
     n_frames = np.shape(zcrs)[1]
     n_samples = np.shape(y_t)[0]
-    frame_labels = lr.samples_to_frames(list(range(n_samples)),
-                                     hop_length=hop_length)
+    frame_labels = lr.samples_to_frames(list(range(n_samples)), hop_length=hop_length)
     sample_cursor = 0
 
     for i in range(n_frames):
@@ -64,6 +65,16 @@ def vad(y_t,
         if flags[n_frames - i - 1]:
             r_cursor = int(np.where(frame_labels == n_frames - i - 1)[0][-1])
             break
-    y_t = y_t[l_cursor:r_cursor]
+    # y_t = y_t[l_cursor:r_cursor]
+    len_beginning = l_cursor
+    len_end = len(y_t) - r_cursor
 
-    return y_t
+    return np.array([len_beginning, len_end])
+
+
+if __name__ == "__main__":
+    dirpath = "../LA/ASVspoof2019_LA_train/flac/"
+    for i, filename in enumerate(os.listdir(dirpath)):
+        y_t, sr = sf.read(os.path.join(dirpath, filename))
+        len_silence = get_silence(y_t, sr)
+        print(i, len_silence)
