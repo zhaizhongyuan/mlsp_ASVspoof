@@ -84,7 +84,7 @@ def process_audio(filepath, feature_type):
 
 if __name__ == '__main__':
     feat_label = []
-    for filepath in tqdm(os.listdir(args.data_path)[:100]):
+    for filepath in tqdm(os.listdir(args.data_path)):
         feat_label.append(process_audio(filepath, args.ftype))
 
     # Create folder to save data
