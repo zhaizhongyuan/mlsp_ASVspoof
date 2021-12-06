@@ -11,6 +11,7 @@ import spafe.features.bfcc
 import spafe.features.gfcc
 import spafe.features.ngcc
 from tqdm import tqdm
+from ctypes import c_int
 
 
 parser = argparse.ArgumentParser()
