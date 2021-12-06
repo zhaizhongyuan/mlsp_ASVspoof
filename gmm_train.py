@@ -1,21 +1,14 @@
-from genericpath import exists
 import os
-import numpy as np
-import pickle
-
-# import soundfile as sf
-# import librosa
-import time
 import gc
+import time
+import pickle
 import argparse
-
-# from python_speech_features import mfcc
+import numpy as np
 from sklearn.mixture import GaussianMixture as GMM
 
-# from sklearn import preprocessing
-# from pdb import set_trace
-# from scipy import stats
+
 def traingmm(train_path, dest):
+    # Create GMM model for bonafide and spoof data
     gmm_bon = GMM(
         n_components=512,
         covariance_type="diag",
@@ -32,12 +25,12 @@ def traingmm(train_path, dest):
         max_iter=600,
         warm_start=True,
     )
+
     gc.enable()
 
-    # Train each 10 piece of data
+    # Read processed train data
     bondata = []
     spdata = []
-
     with open(train_path, "rb") as infile:
         data = pickle.load(infile)
         for t in data:
@@ -57,11 +50,11 @@ def traingmm(train_path, dest):
     print("Sp feature stacked, shape as: ", Xsp.shape)
 
     # clear mem
-    # gc.enable()
     bondata = None
     spdata = None
     gc.collect()
 
+    # Train bonafide
     t0 = time.time()
     gmm_bon.fit(Xbon)
     print("Bon gmm trained, time spend:", time.time() - t0)
@@ -72,22 +65,14 @@ def traingmm(train_path, dest):
     print("GMM bon model created")
 
     # clear mem
-    # gmm_bon = None
+    gmm_bon = None
     Xbon = None
     gc.collect()
 
-    half = Xsp.shape[0] // 2
-
-    print("Sp gmm train first half", half)
+    # Train spoof
     t0 = time.time()
-    gmm_sp.fit(Xsp[:half])
+    gmm_sp.fit(Xsp)
     print("Sp gmm trained, time spend:", time.time() - t0)
-
-    print("Sp gmm train second half", Xsp.shape[0] - half)
-    t0 = time.time()
-    gmm_sp.fit(Xsp[half:])
-    print("Sp gmm trained, time spend:", time.time() - t0)
-
     pickle.dump(
         gmm_sp,
         open(os.path.join(dest, "sp" + ".gmm"), "wb"),
@@ -96,14 +81,14 @@ def traingmm(train_path, dest):
 
 
 if __name__ == "__main__":
-
+    # Parser argument
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data_path",
         required=False,
         type=str,
         default="./data/train/mfcc.pkl",
-        help="path to pickled file. For example, data/train.pkl",
+        help="path to pickled file. For example, data/train/mfcc.pkl",
     )
     parser.add_argument(
         "--model_path",
@@ -113,10 +98,12 @@ if __name__ == "__main__":
         help="path to save model. For example, ./model/mfcc",
     )
     args = parser.parse_args()
-
     train_path = args.data_path
     dest = args.model_path
 
+    # Create folder to store model
     if not os.path.exists(dest):
         os.makedirs(dest)
+
+    # Train
     traingmm(train_path, dest)
