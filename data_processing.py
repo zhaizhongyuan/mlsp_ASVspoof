@@ -1,14 +1,15 @@
 import os
+import time
 import numpy as np
 import pickle
 import argparse
 import soundfile as sf
+import multiprocessing
 import spafe.features.lfcc
 import spafe.features.mfcc
 import spafe.features.bfcc
 import spafe.features.gfcc
 import spafe.features.ngcc
-import spafe.features.pncc
 from tqdm import tqdm
 
 
@@ -44,7 +45,7 @@ def calculate_delta(array):
     return deltas
 
 
-def process_audio(filepath, feature_type):
+def process_audio(filepath):
     # read in labels
     filename2label = {}
     for line in open(args.label_path):
@@ -61,18 +62,16 @@ def process_audio(filepath, feature_type):
     sig, rate = sf.read(os.path.join(args.data_path, filepath))
 
     # extract feature, delta of feature, delta delta of feature
-    if feature_type == "lfcc":
+    if args.ftype == "lfcc":
         feat = spafe.features.lfcc.lfcc(sig, fs=rate, num_ceps=20, pre_emph=0, win_len=0.03, win_hop=0.015, nfilts=70, nfft=1024)
-    elif feature_type == "mfcc":
+    elif args.ftype == "mfcc":
         feat = spafe.features.mfcc.mfcc(sig, fs=rate, num_ceps=20, pre_emph=0, win_len=0.03, win_hop=0.015, nfilts=70, nfft=1024)
-    elif feature_type == "bfcc":
+    elif args.ftype == "bfcc":
         feat = spafe.features.bfcc.bfcc(sig, fs=rate, num_ceps=20, pre_emph=0, win_len=0.03, win_hop=0.015, nfilts=70, nfft=1024)
-    elif feature_type == "gfcc":
+    elif args.ftype == "gfcc":
         feat = spafe.features.gfcc.gfcc(sig, fs=rate, num_ceps=20, pre_emph=0, win_len=0.03, win_hop=0.015, nfilts=70, nfft=1024)
-    elif feature_type == "ngcc":
+    elif args.ftype == "ngcc":
         feat = spafe.features.ngcc.ngcc(sig, fs=rate, num_ceps=20, pre_emph=0, win_len=0.03, win_hop=0.015, nfilts=70, nfft=1024)
-    elif feature_type == "pncc":
-        feat = spafe.features.pncc.pncc(sig, fs=rate, num_ceps=20, pre_emph=0, win_len=0.03, win_hop=0.015, nfilts=70, nfft=1024)
     else:
         print("Bad feature type!")
     delta_feat = calculate_delta(feat)
@@ -83,15 +82,15 @@ def process_audio(filepath, feature_type):
 
 
 if __name__ == '__main__':
-    feat_label = []
-    for filepath in tqdm(os.listdir(args.data_path)):
-        feat_label.append(process_audio(filepath, args.ftype))
+    # Multiprocess to prepare data
+    a_pool = multiprocessing.Pool(8)
+    feat_label = a_pool.map(process_audio, os.listdir(args.data_path))
 
     # Create folder to save data
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
 
-    # Save data
+    # Save output data
     output_path = os.path.join(args.output_path, args.ftype+".pkl")
     with open(output_path, 'wb') as outfile:
         pickle.dump(feat_label, outfile)
