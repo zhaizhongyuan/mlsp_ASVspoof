@@ -14,8 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", required=False, type=str, help='path to ASVSpoof data directory. For example, LA/ASVspoof2019_LA_train/flac/', default="/mnt/LA/ASVspoof2019_LA_train/flac/")
 parser.add_argument("--label_path", required=False, type=str, help='path to label file. For example, LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt', default="/mnt/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt")
 parser.add_argument("--output_path", required=False, type=str, help='path to output pickle file. For example, ./data/train.pkl', default="/home/yuxuan/MLSP_ASVspoof/data/train")
-parser.add_argument("--ftype", required=True, type=str, help="type of featre. For example, lfcc, mfcc, silence, ...")
-# parser.add_argument("--feature_type", required=True, type=str, help='select the feature type.')
+parser.add_argument("--ftype", required=True, type=str, help="type of feature. For example, lfcc, mfcc, silence, ...")
 args = parser.parse_args()
 
 
@@ -74,16 +73,13 @@ def process_audio(filepath, feature_type):
 
 
 if __name__ == '__main__':
-    chunksize = 2600
-    total_size = len(os.listdir(args.data_path)) 
-
-    # Divide data into 10 part, but still single thread
-    for n in range(10):
-        feats = []
-        for filepath in tqdm(os.listdir(args.data_path)[n*chunksize : (n+1)*chunksize]):
-            feats.append(process_audio(filepath, args.ftype))
-            # Save output data
-        output_path = args.output_path + "-{}.pkl".format(n)
-        with open(output_path, 'wb') as outfile:
-            pickle.dump(feats, outfile)
-            print("dumpped", output_path)
+    feats = []
+    for filepath in tqdm(os.listdir(args.data_path)[:100]):
+        feats.append(process_audio(filepath, args.ftype))
+    # Save output data
+    if not os.path.exists(args.output_path):
+        os.makedirs(args.output_path)
+    output_path = os.path.join(args.output_path, args.ftype+".pkl")
+    with open(output_path, 'wb') as outfile:
+        pickle.dump(feats, outfile)
+        print("dumpped", output_path)
