@@ -16,3 +16,8 @@ __pycache__/
 *.log
 
 log/
+model/
+data/
+output/
+
+tDCF_python/
