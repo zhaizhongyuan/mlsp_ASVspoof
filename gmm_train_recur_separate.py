@@ -87,7 +87,7 @@ def traingmm(train_path, dest):
     # save model after iteration
     pickle.dump(
         gmm_bon,
-        open(os.path.join(dest, "bon-{}".format(i) + ".gmm"), "wb"),
+        open(os.path.join(dest, "bon" + ".gmm"), "wb"),
     )
     print("GMM bon model created")
 
