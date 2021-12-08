@@ -161,6 +161,17 @@ def process_audio(filepath_tuple):
             nfilts=70,
             nfft=1024,
         )
+    elif args.ftype == "imfcc":
+        feat = spafe.features.mfcc.imfcc(
+            sig,
+            fs=rate,
+            num_ceps=20,
+            pre_emph=0,
+            win_len=0.025,
+            win_hop=0.01,
+            nfilts=70,
+            nfft=1024,
+        )
     elif args.ftype == "bfcc":
         feat = spafe.features.bfcc.bfcc(
             sig,
