@@ -52,13 +52,16 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+pbar = None
 
 def increment():
     # Multiprocess counter
     with counter_lock:
         counter.value += 1
-        if counter.value % 200 == 0:
-            print(counter.value)
+        # if counter.value % 200 == 0:
+            # print(counter.value)
+        pbar.n = counter.value
+        pbar.refresh()
 
 
 # modify data processing to calculate coefficient: MFCC, delta MFCC, and delta delta MFCC
@@ -120,7 +123,7 @@ def process_audio(filepath_tuple):
     if args.ftype == "silence":
         feat = silence_measure.get_silence(sig, rate)
         feat = feat.reshape((1, 2))
-        if args.data_split == "train":
+        if args.data_split == "train" or args.data_split == "dev":
             return (feat, label)
         else:
             return (index, feat)
@@ -133,6 +136,17 @@ def process_audio(filepath_tuple):
             pre_emph=0,
             win_len=0.03,
             win_hop=0.015,
+            nfilts=70,
+            nfft=1024,
+        )
+    elif args.ftype == "lfcc-25":
+        feat = spafe.features.lfcc.lfcc(
+            sig,
+            fs=rate,
+            num_ceps=20,
+            pre_emph=0,
+            win_len=0.025,
+            win_hop=0.01,
             nfilts=70,
             nfft=1024,
         )
@@ -186,7 +200,7 @@ def process_audio(filepath_tuple):
     delta_delta_feat = calculate_delta(delta_feat)
     combined_feat = np.hstack((feat, delta_feat, delta_delta_feat))
 
-    if args.data_split == "train":
+    if args.data_split == "train" or args.data_split == "dev":
         return (combined_feat, label)
     else:
         return (index, combined_feat)
@@ -198,7 +212,7 @@ if __name__ == "__main__":
 
     filepath_list = None
 
-    if args.data_split == "train":
+    if args.data_split == "train" or args.data_split == "dev":
         # process data in order of file name (order of file placed in dataset folder)
         filepath_list = os.listdir(args.data_path)
     else:
@@ -206,13 +220,17 @@ if __name__ == "__main__":
         with open(args.label_path, 'r') as f:
             lines = f.readlines()
         filepath_list = [line.split()[1] + ".flac" for line in lines]
+
+    pbar = tqdm(total=len(filepath_list))
     
     # Multiprocess to prepare data
     a_pool = multiprocessing.Pool(8)
     # feat_label = a_pool.map(process_audio, os.listdir(args.data_path))
     data_list = a_pool.map(process_audio, enumerate(filepath_list))
 
-    if args.data_split != "train":
+    pbar.close()
+
+    if args.data_split == "eval":
         # sort data by order
         data_list.sort(key= lambda x: x[0])
         data_list = [data for _, data in data_list]
