@@ -14,7 +14,6 @@ from tqdm import tqdm
 import silence_measure
 from ctypes import c_int
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--data_path",
@@ -45,6 +44,8 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+counter = multiprocessing.Value(c_int)
+counter_lock = multiprocessing.Lock()
 
 def increment():
     # Multiprocess counter
@@ -171,8 +172,6 @@ def process_audio(filepath):
 
 
 if __name__ == "__main__":
-    counter = multiprocessing.Value(c_int)
-    counter_lock = multiprocessing.Lock()
     # Multiprocess to prepare data
     a_pool = multiprocessing.Pool(8)
     feat_label = a_pool.map(process_audio, os.listdir(args.data_path))

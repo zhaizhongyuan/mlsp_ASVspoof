@@ -1,3 +1,3 @@
-echo "training with train data on features: mfcc"
-python3 gmm_train.py --data_path ./data/train/mfcc.pkl \
-                    --model_path ./model/mfcc
+echo "training with train data on features: lfcc"
+python3 gmm_train_recur_separate.py --data_path ./data/train/lfcc.pkl \
+                    --model_path ./model/lfcc

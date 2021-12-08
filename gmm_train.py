@@ -56,26 +56,36 @@ def traingmm(train_path, dest):
 
     # Train bonafide
     t0 = time.time()
+    print("Train on Xbon shape {}".format(Xbon.shape[0]))
     gmm_bon.fit(Xbon)
     print("Bon gmm trained, time spend:", time.time() - t0)
     pickle.dump(
         gmm_bon,
-        open(os.path.join(dest, "bon" + ".gmm"), "wb"),
+        # open(os.path.join(dest, "bon" + ".gmm"), "wb"),
+        open(os.path.join(dest, "bon_fit_all_partial" + ".gmm"), "wb"),
     )
     print("GMM bon model created")
 
-    # clear mem
+    # clear memory
     gmm_bon = None
     Xbon = None
     gc.collect()
 
     # Train spoof
+    Xsp_first_partial = Xsp[:Xsp.shape[0] // 2]
+    Xsp_second_partial = Xsp[Xsp.shape[0] // 2:]
     t0 = time.time()
-    gmm_sp.fit(Xsp)
+    print("Train on Xsp first partial shape {}".format(Xsp_first_partial.shape[0]))
+    gmm_sp.fit(Xsp_first_partial)
+    print("First half Sp gmm trained, time spend:", time.time() - t0)
+    t0 = time.time()
+    print("Train on Xsp second partial shape {}".format(Xsp_second_partial.shape[0]))
+    gmm_sp.fit(Xsp_second_partial)
     print("Sp gmm trained, time spend:", time.time() - t0)
     pickle.dump(
         gmm_sp,
-        open(os.path.join(dest, "sp" + ".gmm"), "wb"),
+        # open(os.path.join(dest, "sp" + ".gmm"), "wb"),
+        open(os.path.join(dest, "spoof_fit_all_partial" + ".gmm"), "wb"),
     )
     print("GMM sp model created")
 

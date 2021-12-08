@@ -88,22 +88,22 @@ if __name__ == "__main__":
         "--data_path",
         required=True,
         type=str,
-        default="./data/dev/mfcc.pkl",
-        help="path to pickled file. For example, ./data/dev/mfcc.pkl",
+        default="./data/dev/lfcc.pkl",
+        help="path to pickled file. For example, ./data/dev/lfcc.pkl",
     )
     parser.add_argument(
         "--model_path_bon",
         required=True,
         type=str,
-        default="./model/mfcc/bon.gmm",
-        help="path to pickled file. For example, ./model/mfcc/bon.gmm",
+        default="./model/lfcc/bon_fit_all_partial.gmm",
+        help="path to pickled file. For example, ./model/lfcc/bon.gmm",
     )
     parser.add_argument(
         "--model_path_sp",
         required=True,
         type=str,
-        default="./data/mfcc/sp.gmm",
-        help="path to pickled file. For example, ./data/mfcc/sp.gmm",
+        default="./data/lfcc/sp.gmm",
+        help="path to pickled file. For example, ./data/lfcc/sp.gmm",
     )
     args = parser.parse_args()
     dev_path = args.data_path

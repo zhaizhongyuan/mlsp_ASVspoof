@@ -26,7 +26,7 @@ def traingmm(train_path, dest):
         covariance_type="diag",
         n_init=1,
         verbose=2,
-        max_iter=20,   # set low max iter to limit converging speed
+        max_iter=40,   # set low max iter to limit converging speed
         warm_start=True,
     )
 
@@ -62,7 +62,7 @@ def traingmm(train_path, dest):
     gc.collect()
 
     # iteration through chunks of data
-    num_chunk = 10
+    num_chunk = 2
     sp_chunk_size = (Xsp.shape[0] // num_chunk) + 1
 
     # iteration of chunks
