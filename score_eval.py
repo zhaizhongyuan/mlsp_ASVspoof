@@ -6,9 +6,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cm_score",
-        required=True,
+        required=False,
         type=str,
-        default="./output/gmm_score.text",
+        default="./output/gmm_score.txt",
         help="path to dev/eval score file. For example, output/gmm_score.text",
     )
     parser.add_argument(
