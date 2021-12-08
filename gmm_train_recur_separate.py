@@ -11,24 +11,31 @@ import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 
-def traingmm(train_path, dest):
-    # Create GMM model for bonafide and spoof data
-    gmm_bon = GMM(
-        n_components=512,
-        covariance_type="diag",
-        n_init=1,
-        verbose=2,
-        max_iter=300,
-        warm_start=True,
-    )
-    gmm_sp = GMM(
-        n_components=512,
-        covariance_type="diag",
-        n_init=1,
-        verbose=2,
-        max_iter=20,   # set low max iter to limit converging speed
-        warm_start=True,
-    )
+def traingmm(train_path, dest, load_model):
+    if not load_model:
+        # Create GMM model for bonafide and spoof data
+        gmm_bon = GMM(
+            n_components=512,
+            covariance_type="diag",
+            n_init=1,
+            verbose=2,
+            max_iter=300,
+            warm_start=True,
+        )
+        gmm_sp = GMM(
+            n_components=512,
+            covariance_type="diag",
+            n_init=1,
+            verbose=2,
+            max_iter=20,   # set low max iter to limit converging speed
+            warm_start=True,
+        )
+    else:
+        load_bon = os.path.join(load_model, "bon" + ".gmm")
+        load_sp = os.path.join(load_model, "sp" + ".gmm")
+        # Load saved GMM model for bonafide and spoof
+        gmm_bon = pickle.load(open(load_bon, "rb"))
+        gmm_sp = pickle.load(open(load_sp, "rb"))
 
     gc.enable()
 
@@ -109,13 +116,21 @@ if __name__ == "__main__":
         default="./model/mfcc",
         help="path to save model. For example, ./model/mfcc",
     )
+    parser.add_argument(
+        "--load_model_path",
+        required=False,
+        type=str,
+        default="",
+        help="path to load previous model for continue training, default is none. For example, ./model/mfcc",
+    )
     args = parser.parse_args()
     train_path = args.data_path
     dest = args.model_path
+    load_model = args.load_model_path
 
     # Create folder to store model
     if not os.path.exists(dest):
         os.makedirs(dest)
 
     # Train
-    traingmm(train_path, dest)
+    traingmm(train_path, dest, load_model)
