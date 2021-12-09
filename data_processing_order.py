@@ -10,6 +10,7 @@ import spafe.features.mfcc
 import spafe.features.bfcc
 import spafe.features.gfcc
 import spafe.features.ngcc
+import spafe.features.psrcc
 from tqdm import tqdm
 import silence_measure
 from ctypes import c_int
@@ -202,6 +203,29 @@ def process_audio(filepath_tuple):
             pre_emph=0,
             win_len=0.03,
             win_hop=0.015,
+            nfilts=70,
+            nfft=1024,
+        )
+    elif args.ftype == "bfcc-25":
+        feat = spafe.features.bfcc.bfcc(
+            sig,
+            fs=rate,
+            num_ceps=20,
+            pre_emph=0,
+            win_len=0.025,
+            win_hop=0.01,
+            nfilts=70,
+            nfft=1024,
+        )
+    elif args.ftype == "psrcc-25":
+        sig[sig == 0] = 1e-5
+        feat = spafe.features.psrcc.psrcc(
+            sig,
+            fs=rate,
+            num_ceps=20,
+            pre_emph=0,
+            win_len=0.025,
+            win_hop=0.01,
             nfilts=70,
             nfft=1024,
         )
