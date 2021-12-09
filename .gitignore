@@ -19,5 +19,7 @@ log/
 model/
 data/
 output/
+ensemble/
+experiment/
 
 # tDCF_python/
