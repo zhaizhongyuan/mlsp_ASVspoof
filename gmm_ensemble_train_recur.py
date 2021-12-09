@@ -15,7 +15,7 @@ def traingmm(train_dir, dest, load_model):
     if not load_model:
         # Create GMM model for bonafide and spoof data
         gmm_bon = GMM(
-            n_components=256,
+            n_components=512,
             covariance_type="diag",
             n_init=1,
             verbose=2,
@@ -23,7 +23,7 @@ def traingmm(train_dir, dest, load_model):
             warm_start=True,
         )
         gmm_sp = GMM(
-            n_components=256,
+            n_components=512,
             covariance_type="diag",
             n_init=1,
             verbose=2,
@@ -84,7 +84,7 @@ def traingmm(train_dir, dest, load_model):
     gc.collect()
 
     # iteration through chunks of data
-    num_chunk = 4
+    num_chunk = 6
     sp_chunk_size = (Xsp.shape[0] // num_chunk) + 1
 
     # iteration of chunks
