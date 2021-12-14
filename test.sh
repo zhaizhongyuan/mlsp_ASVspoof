@@ -1,14 +1,5 @@
-# echo "testing with dev data on features: mfcc"
-# python3 gmm_test.py --data_path ./data/dev/mfcc.pkl \
-#                     --model_path_bon ./model/mfcc/bon.gmm \
-#                     --model_path_sp ./model/mfcc/sp.gmm
-
-# echo "testing with test data on features: mfcc"
-# python3 gmm_test.py --data_path ./data/test/mfcc.pkl \
-#                     --model_path_bon ./model/mfcc/bon.gmm \
-#                     --model_path_sp ./model/mfcc/sp.gmm
-
-python gmm_test_output.py --data_path ./data/eval/eval-mfcc.pkl \
+echo "testing on evaluation dataset and then generate evaluation metrics"
+python gmm_test.py --data_path ./data/eval/eval-mfcc.pkl \
                          --model_path_bon ./model/mfcc/bon.gmm \
                          --model_path_sp ./model/mfcc/sp.gmm \
                          --label_path ../LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt \
