@@ -60,13 +60,11 @@ def increment():
     # Multiprocess counter
     with counter_lock:
         counter.value += 1
-        # if counter.value % 200 == 0:
-            # print(counter.value)
         pbar.n = counter.value
         pbar.refresh()
 
 
-# modify data processing to calculate coefficient: MFCC, delta MFCC, and delta delta MFCC
+# modify data processing to calculate coefficient, for example: MFCC, delta MFCC, and delta delta MFCC
 def calculate_delta(array):
     # https://github.com/MohamadMerchant/Voice-Authentication-and-Face-Recognition
     rows, cols = array.shape
@@ -101,12 +99,6 @@ for line in open(args.label_path):
     filename2label[filename] = label
 
 def process_audio(filepath_tuple):
-    # # read in labels
-    # filename2label = {}
-    # for line in open(args.label_path):
-    #     line = line.split()
-    #     filename, label = line[1], line[-1]
-    #     filename2label[filename] = label
 
     index, filepath = filepath_tuple
 
@@ -306,7 +298,6 @@ if __name__ == "__main__":
     
     # Multiprocess to prepare data
     a_pool = multiprocessing.Pool(8)
-    # feat_label = a_pool.map(process_audio, os.listdir(args.data_path))
     data_list = a_pool.map(process_audio, enumerate(filepath_list))
 
     pbar.close()

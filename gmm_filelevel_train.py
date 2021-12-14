@@ -49,7 +49,6 @@ def traingmm(train_dir, dest, load_model):
     for filepath in filepath_list:
         with open(filepath, "rb") as infile:
             data = pickle.load(infile)
-            # print(len(data))
             data_collect.append(data)
 
     bondata = []
@@ -57,15 +56,8 @@ def traingmm(train_dir, dest, load_model):
     for i in range(len(data_collect[0])):
         data_comb = []
         for j in range(len(data_collect)):
-            # print(data_collect[j][i])
-            # print(data_collect[j][i][0].shape)
             data_comb.append(data_collect[j][i][0])
-        # data_stack = np.stack(data_comb, axis=1)
         data_stack = np.concatenate(data_comb, axis=1)
-        # print(data_stack)
-        # print(data_stack.shape)
-
-        # exit()
 
         if data_collect[0][i][1] == "bonafide":
             bondata.append(data_stack)

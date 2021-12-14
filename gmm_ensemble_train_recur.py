@@ -49,7 +49,6 @@ def traingmm(train_dir, dest, load_model):
     for filepath in filepath_list:
         with open(filepath, "rb") as infile:
             data = pickle.load(infile)
-            # print(len(data))
             data_collect.append(data)
 
     bondata = []
@@ -57,10 +56,8 @@ def traingmm(train_dir, dest, load_model):
     for i in range(len(data_collect[0])):
         data_comb = []
         for j in range(len(data_collect)):
-            # print(data_collect[j][i][0].shape)
             data_comb.append(data_collect[j][i][0])
         data_stack = np.stack(data_comb, axis=1)
-        # print(data_stack.shape)
 
         if data_collect[0][i][1] == "bonafide":
             bondata.append(data_stack)
@@ -95,9 +92,6 @@ def traingmm(train_dir, dest, load_model):
         # Train spoof
         print("gmm sp training on chunk from {} to {} of size {}".format(j*sp_chunk_size, (j+1)*sp_chunk_size, sp_chunk_size))
         gmm_sp.fit(Xsp[j*sp_chunk_size : (j+1)*sp_chunk_size])
-
-    # print("gmm sp training on all")
-    # gmm_sp.fit(Xsp)
 
     pickle.dump(
         gmm_sp,

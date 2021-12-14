@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import sklearn.metrics
 
 def sigmoid(y_diff):
-    # print("y pred max", y_diff.max(), " y pred min", y_diff.min())
     k = 1.0
     y_prob = 1.0 / (1.0 + np.exp(-k * y_diff))
     return y_prob
@@ -19,8 +18,6 @@ def eer_score(y_true, y_pred):
     fnr = 1 - tpr
     eer_threshold = threshold[np.nanargmin(np.absolute(fnr - fpr))]
     eer = fpr[np.nanargmin(np.absolute(fnr - fpr))]
-
-    # print("y pred max", y_pred.max(), " y pred min", y_pred.min())
 
     fig,ax = plt.subplots()
     ax.plot(fpr,tpr)

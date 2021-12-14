@@ -4,8 +4,6 @@ import time
 import pickle
 import argparse
 import numpy as np
-# from sklearn.mixture import GaussianMixture as GMM
-# from sklearn.exceptions import ConvergenceWarning
 from tqdm import tqdm
 
 
